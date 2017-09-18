@@ -20,7 +20,6 @@ class UserBasedCF():
 
         # 用户相似度矩阵
         self.user_sim_matrix = {}
-        # self.movie_popular = {}
         self.movie_count = 0
 
         print('Similar user number = %d' % self.n_sim_user)
