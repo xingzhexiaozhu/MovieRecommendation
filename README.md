@@ -1,4 +1,4 @@
-# MovieRecommendation 
+# 基于协同滤波的电影推荐系统 
 
 基于Python3，实现电影推荐系统，数据集是MovieLens官方数据集【见data.txt】   
    
