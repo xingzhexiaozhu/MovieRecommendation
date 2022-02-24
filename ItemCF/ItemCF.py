@@ -52,6 +52,8 @@ class ItemBasedCF():
             for i, line in enumerate(f):
                 if i == 0:  # 去掉文件第一行的title
                     continue
+                if i >= 300000:  # 读取30w条数据
+                    break
                 yield line.strip('\r\n')
         print('Load %s success!' % filename)
 
@@ -133,7 +135,7 @@ class ItemBasedCF():
 
 
 if __name__ == '__main__':
-    rating_file = 'D:\\学习资料\\推荐系统\\ml-latest-small\\ratings.csv'
+    rating_file = 'D:\\推荐系统\\数据集\\ml-25m\\ratings.csv'
     itemCF = ItemBasedCF()
     itemCF.get_dataset(rating_file)
     itemCF.calc_movie_sim()
