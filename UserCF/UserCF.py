@@ -25,7 +25,6 @@ class UserBasedCF():
         print('Similar user number = %d' % self.n_sim_user)
         print('Recommneded movie number = %d' % self.n_rec_movie)
 
-
     # 读文件得到“用户-电影”数据
     def get_dataset(self, filename, pivot=0.75):
         trainSet_len = 0
@@ -33,8 +32,10 @@ class UserBasedCF():
         for line in self.load_file(filename):
             user, movie, rating, timestamp = line.split(',')
             if random.random() < pivot:
-                self.trainSet.setdefault(user, {})
+                self.trainSet.setdefault(user, {})  # 如果user不存在 则创建k值为user的空字典
                 self.trainSet[user][movie] = rating
+                # trainSet的内容：
+                # {‘user1’: {'movie1': rating1, 'movie2': rating2}, ‘user2’: {'movie3': rating3, 'movie4': rating4} }
                 trainSet_len += 1
             else:
                 self.testSet.setdefault(user, {})
@@ -44,16 +45,16 @@ class UserBasedCF():
         print('TrainSet = %s' % trainSet_len)
         print('TestSet = %s' % testSet_len)
 
-
     # 读文件，返回文件的每一行
     def load_file(self, filename):
         with open(filename, 'r') as f:
             for i, line in enumerate(f):
                 if i == 0:  # 去掉文件第一行的title
                     continue
+                if i >= 300000:  # 读取30w条数据
+                    break
                 yield line.strip('\r\n')
         print('Load %s success!' % filename)
-
 
     # 计算用户之间的相似度
     def calc_user_sim(self):
@@ -61,6 +62,7 @@ class UserBasedCF():
         # key = movieID, value = list of userIDs who have seen this movie
         print('Building movie-user table ...')
         movie_user = {}
+        # {‘movie1’: {'user1','user2','user3'}, 'movie2':{'user4', 'user5'}}
         for user, movies in self.trainSet.items():
             for movie in movies:
                 if movie not in movie_user:
@@ -80,6 +82,7 @@ class UserBasedCF():
                     self.user_sim_matrix.setdefault(u, {})
                     self.user_sim_matrix[u].setdefault(v, 0)
                     self.user_sim_matrix[u][v] += 1
+                    # user_sim_matrix[u][v] = k 表示 用户u和用户v评价过的相同的电影数目
         print('Build user co-rated movies matrix success!')
 
         # 计算相似性
@@ -87,8 +90,8 @@ class UserBasedCF():
         for u, related_users in self.user_sim_matrix.items():
             for v, count in related_users.items():
                 self.user_sim_matrix[u][v] = count / math.sqrt(len(self.trainSet[u]) * len(self.trainSet[v]))
+                # trainSet[u]表示 用户u的向量长度
         print('Calculate user similarity matrix success!')
-
 
     # 针对目标用户U，找到其最相似的K个用户，产生N个推荐
     def recommend(self, user):
@@ -105,7 +108,6 @@ class UserBasedCF():
                 rank.setdefault(movie, 0)
                 rank[movie] += wuv
         return sorted(rank.items(), key=itemgetter(1), reverse=True)[0:N]
-
 
     # 产生推荐并通过准确率、召回率和覆盖率进行评估
     def evaluate(self):
@@ -135,7 +137,7 @@ class UserBasedCF():
 
 
 if __name__ == '__main__':
-    rating_file = 'D:\\学习资料\\推荐系统\\ml-latest-small\\ratings.csv'
+    rating_file = 'D:\\推荐系统\\数据集\\ml-25m\\ratings.csv'
     userCF = UserBasedCF()
     userCF.get_dataset(rating_file)
     userCF.calc_user_sim()
